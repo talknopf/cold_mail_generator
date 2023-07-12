@@ -2,12 +2,14 @@ from flask import Flask, render_template, request
 import openai
 import requests
 from bs4 import BeautifulSoup
-
+import os
 
 # Set up the OpenAI API key and model
-openai.api_key = "YOUR_API_KEY"
+openai.api_key = os.getenv('OPENAI_API_KEY', 'missing')
 model_engine = "text-davinci-003"
 
+# setup variable listener port, deafault is 80
+service_port = os.getenv('SERVICE_PORT', 80)
 
 app = Flask(__name__)
 
@@ -34,10 +36,9 @@ def generate_email():
     target_text = soup.get_text()
 
     # Generate the cold email using the OpenAI GPT-3.5 model
-    prompt = f"Generate an intro email from an SDR of a professional services company named 2bcloud to a potential customer. \
-    it should describe the services 2bcloud can offer which are found here:{service_text}. \
-    The customer's webpage content is here: {target_text} \
-    The email should demonstrate the fact we researched the customer and we can help augment the internal teams"
+    prompt = f"Generate an intro email from a company providing serices as described here:{service_text}. \
+    the intro email should demonstrate value to this to the company we can read of here: {target_text} \
+    That will be our customer"
     completions = openai.Completion.create(
         engine=model_engine,
         prompt=prompt,
@@ -59,4 +60,4 @@ def generate_email():
 
 # Run the app
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=service_port)
